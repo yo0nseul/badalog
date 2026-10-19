@@ -153,7 +153,7 @@ details.bulk textarea{min-height:160px}
 .page.t-navy{--c-bg:#06070b;--c-fg:#e5e8ef;--c-mut:#7d879c;--c-line:#1a2134;--c-soft:#151d36;--c-ink:#2b3d72;--c-on:#e5e8ef;--c-pill:#0e1427;--c-pill-line:#1d2742;--c-hl:#24366b}
 .page.t-sky{--c-bg:#eef6fc;--c-fg:#1e2b3a;--c-mut:#7b92a8;--c-line:#d2e2ef;--c-soft:#ffffff;--c-ink:#6aa6d6;--c-on:#ffffff;--c-pill:#ffffff;--c-pill-line:#d6e6f2;--c-hl:#cde5f7}
 .page.dotted .turn.user .txt{background-image:var(--dotimg);background-size:18px 18px;background-repeat:repeat}
-.r{white-space:pre-wrap}
+.r{white-space:normal;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .r.b{font-weight:var(--wb)}
 .r.u{text-decoration:underline;text-underline-offset:.22em;text-decoration-thickness:1px}
 .r.h{background:var(--c-hl);color:var(--c-fg);border-radius:2px;padding:0 1px}
@@ -664,8 +664,9 @@ function prep(t){
 function md(str){
   const on={};let out='',buf='';
   const flush=()=>{if(!buf)return;const cls=MK.filter(m=>on[m[1]]).map(m=>m[2]);out+=cls.length?`<span class="r ${cls.join(' ')}">${esc(buf)}</span>`:esc(buf);buf=''};
+  str=str.replace(/[ \t 　]+/g,' ');
   for(const ch of str){if(SENT.includes(ch)){flush();on[ch]=!on[ch]}else buf+=ch}
-  flush();return out;
+  flush();return out.replace(/(<span class="r [^"]*">) /g,' $1').replace(/ (<\/span>)/g,'$1 ');
 }
 function openAt(str){const on={};for(const ch of str)if(SENT.includes(ch))on[ch]=!on[ch];return SENT.filter(c=>on[c]).join('')}
 
@@ -972,7 +973,6 @@ let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(prev
 
 /* ── 이미지 저장 ── */
 let SHOTS=[];
-/* 내 사이트용 저장: 공유 창(아이폰 '이미지 저장') → 안 되면 바로 다운로드 */
 const LOCAL_DL={async save({filename,data}){
   const type=filename.endsWith('.png')?'image/png':'application/json';
   const blob=data instanceof Blob?data:new Blob([data],{type});
